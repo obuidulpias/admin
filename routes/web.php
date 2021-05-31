@@ -42,6 +42,14 @@ Route::get('/get-category-info-by-id/{id}', [
     "uses"        => "App\Http\Controllers\CategoryController@getCategoryInfoById",
     "as"          => "get-category-info-by-id",
 ]);
+Route::post('/update-category-info', [
+    "uses"        => "App\Http\Controllers\CategoryController@updateCategoryInfo",
+    "as"          => "update-category-info",
+]);
+Route::post('/delete-category-info', [
+    "uses"        => "App\Http\Controllers\CategoryController@deleteCategoryInfo",
+    "as"          => "delete-category-info",
+]);
 
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {

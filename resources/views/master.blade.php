@@ -312,6 +312,124 @@
                         }
                     });
                 });
+                $(document).on('submit', '#updateCategoryForm', function() {
+                    event.preventDefault();
+                    if($('#inputName').val().trim())
+                    {
+                        var regex = /^[a-zA-Z ]{2,30}$/;
+                        if(regex.test($('#inputName').val()))
+                        {
+                            $.ajax({
+                                method      :   "POST",
+                                url         :   'update-category-info',
+                                dataType    :   'JSON',
+                                data        :   new FormData(this),
+                                contentType :   false,
+                                cache       :   false,
+                                processData :   false,
+                                success     :   function (response) {
+                                    if(response.success)
+                                    {
+                                        $('#categoryName'+response.id).text(response.name);
+                                        $('#categoryImage'+response.id).attr('src', 'http://localhost/admin/public/'+response.image);
+                                        $('#resultMessage').text(response.message);
+                                        $('#updateCategoryImageError').text("");
+                                        $('#editModel').modal('hide');
+                                    }
+                                    else
+                                    {
+                                        $('#updateCategoryImageError').text(response.message);
+                                        $('#imageInput').val("");
+                                        $('#inputImage').attr('src', 'http://localhost/admin/public/no_preview.png');
+                                    }
+                                }
+                            });
+                        }
+                        else
+                        {
+                            $('#nameUpdateError').text('Please use character for category name.');
+                        }
+                    }
+                    else
+                    {
+                        $('#nameUpdateError').text('Category name field is required.');
+                    }
+                });
+                function readURL(input) {
+                    if (input.files && input.files[0]) {
+                        var reader = new FileReader();
+                        reader.onload = function(e)
+                        {
+                            //console.log(input.files[0].name);
+                            var arr = input.files[0].name.split(".");
+                            if(arr.pop() == 'jpg' || arr.pop() == 'png' || arr.pop() == 'gif' || arr.pop() == 'jpeg')
+                            {
+                                $('#inputImage').attr('src', e.target.result);
+                            }
+                            else
+                            {
+                                $('#updateCategoryImageError').text("image extension is not valid");
+                                $('#imageInput').val("");
+                                $('#inputImage').attr('src', 'http://localhost/admin/public/no_preview.png');
+                            }
+                        }
+                        reader.readAsDataURL(input.files[0]); // convert to base64 string
+                    }
+                }
+                $("#imageInput").change(function() {
+
+                    readURL(this);
+                });
+                $(document).on('click', '.delete-category', function() {
+                    event.preventDefault();
+                    var id      = $(this).attr('id');
+                    var check   = confirm('Are you sure to delete this!!!');
+                    if(check) {
+                        $.ajax({
+                            method  : "POST",
+                            url     : 'delete-category-info',
+                            dataType: 'JSON',
+                            data : {
+                                _token  : $('input[name="_token"]').val(),
+                                id      : id,
+                            },
+                            success : function (response) {
+                                console.log(response.categories);
+                                var tr = '';
+                                $.each(response.categories, function(key, value) {
+                                    tr += '<tr>';
+                                        tr += '<td>'+ (key+1) +'</td>';
+                                        tr += '<td id="categoryName'+value.id+'">'+value.name+'</td>';
+                                        tr += '<td><img src="'+value.image+'" id="categoryImage'+value.id+'" alt="'+value.name+'" height="50" width="80"/></td>';
+                                        tr += '<td id="status'+value.id+'">'+(value.status == 1 ? "Published" : "Unpublished") +'</td>';
+                                        tr += '<td>';
+                                            if(value.status == 1) {
+                                                tr += '<a href="" class="btn btn-sm btn-info category-status" id="'+value.id+'" title="Published Category">';
+                                                    tr += '<i id="icon'+value.id+'" class="fas fa-arrow-alt-circle-up"></i>';
+                                                tr += '</a> ';
+                                            } else {
+                                                tr += '<a href="" class="btn btn-sm btn-warning category-status" id="'+value.id+'" title="Unpublished Category">';
+                                                    tr += '<i id="icon'+value.id+'" class="fas fa-arrow-alt-circle-down"></i>';
+                                                tr += '</a> ';
+                                            }
+                                            tr += '<a href="" class="btn btn-sm btn-success edit-category" id="'+value.id+'" title="Edit Category">';
+                                                tr += '<i class="fas fa-edit"></i>';
+                                            tr += '</a> ';
+                                            tr += '<a href="" class="btn btn-sm btn-danger delete-category" id="'+value.id+'" title="Delete Category">';
+                                                tr += '<i class="fas fa-trash"></i>';
+                                            tr += '</a>';7
+                                        tr += '</td>';
+                                    tr += '</tr>';
+                                });
+                                $('#category-datatable').DataTable().destroy();
+                                $('#category-datatable tbody').empty().append(tr);
+                                $('#category-datatable').DataTable().draw();
+                            }
+                        });
+                    } else {
+                        return false;
+                    }
+                });
                 
 
                 
